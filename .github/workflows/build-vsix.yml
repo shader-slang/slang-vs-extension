@@ -24,7 +24,9 @@ jobs:
       uses: microsoft/setup-msbuild@v1
     - name: Copy Slang binaries and Build VSIX
       run: |
-        Expand-Archive -Path slang-${{ steps.download-win32.outputs.version}}-win64.zip -DestinationPath .\SlangServer
+        $verName="${{steps.download-win32.outputs.version}}";
+        $verName=$verName.SubString(1, ($str.Length-1));
+        Expand-Archive -Path slang-$verName-win64.zip -DestinationPath .\SlangServer
         MSBuild.exe SlangClient.sln -v:m -m -property:Configuration=Release
     - uses: actions/upload-artifact@v3
       with:
