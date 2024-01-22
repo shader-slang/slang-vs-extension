@@ -29,7 +29,7 @@ jobs:
         Expand-Archive -Path slang-$verName-win64.zip -DestinationPath .\SlangServer
         Copy-Item -Path .\SlangServer\bin\windows-x64\release\slang.dll .\SlangServer\slang.dll
         Copy-Item -Path .\SlangServer\bin\windows-x64\release\slangd.exe .\SlangServer\slangd.exe
-        MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform=Any
+        MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform="Any CPU"
     - uses: actions/upload-artifact@v3
       with:
         name: slang-vsix
