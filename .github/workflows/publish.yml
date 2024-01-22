@@ -13,6 +13,8 @@ jobs:
       with:
         submodules: 'true'
         fetch-depth: '0'
+    - name: Add nuget to PATH
+      uses: nuget/setup-nuget@v1
     - name: Download artifact - win64
       id: download-win32
       uses: dsaltares/fetch-gh-release-asset@master
@@ -21,6 +23,8 @@ jobs:
         file: 'slang-.*-win64\.zip'
         target: "./"
         regex: true
+    - name: Restore
+      run: nuget restore
     - name: setup-msbuild
       uses: microsoft/setup-msbuild@v1
     - name: Copy Slang binaries and Build VSIX
@@ -30,7 +34,7 @@ jobs:
         Expand-Archive -Path slang-$verName-win64.zip -DestinationPath .\SlangServer
         Copy-Item -Path .\SlangServer\bin\windows-x64\release\slang.dll .\SlangServer\slang.dll
         Copy-Item -Path .\SlangServer\bin\windows-x64\release\slangd.exe .\SlangServer\slangd.exe
-        MSBuild.exe SlangClient.sln -v:m -m -property:Configuration=Release
+        MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform="Any CPU"
     - uses: actions/upload-artifact@v3
       with:
         name: slang-vs-extension-vsix
