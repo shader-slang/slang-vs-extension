@@ -1,0 +1,7 @@
+﻿[$RootKey$\InstalledProducts\SlangClient]
+"Package"="{6a1f5d32-b0e3-47cb-a5fa-a82635855997}"
+[$RootKey$\BindingPaths\{6a1f5d32-b0e3-47cb-a5fa-a82635855997}]
+"$PackageFoler$"=""
+
+[$RootKey$\TextMate\Repositories]
+"slangclient"="$PackageFolder$/Syntaxes"
