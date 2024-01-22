@@ -27,7 +27,9 @@ jobs:
         $verName="${{steps.download-win32.outputs.version}}";
         $verName=$verName.SubString(1, ($verName.Length-1));
         Expand-Archive -Path slang-$verName-win64.zip -DestinationPath .\SlangServer
-        MSBuild.exe SlangClient.sln -v:m -m -property:Configuration=Release
+        Copy-Item -Path .\SlangServer\bin\windows-x64\release\slang.dll .\SlangServer\slang.dll
+        Copy-Item -Path .\SlangServer\bin\windows-x64\release\slangd.exe .\SlangServer\slangd.exe
+        MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform=Any
     - uses: actions/upload-artifact@v3
       with:
         name: slang-vsix
