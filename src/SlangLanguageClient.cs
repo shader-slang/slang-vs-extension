@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
+using Newtonsoft.Json;
 using StreamJsonRpc;
 using System;
 using System.Collections.Concurrent;
@@ -14,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,6 +50,8 @@ namespace SlangClient
             get
             {
                 yield return "slang.predefinedMacros";
+                yield return "slang.additionalSearchPaths";
+                yield return "slang.enableCommitCharactersInAutoCompletion";
             }
         }
 
@@ -64,7 +68,7 @@ namespace SlangClient
         public event AsyncEventHandler<EventArgs> StartAsync;
         public event AsyncEventHandler<EventArgs> StopAsync;
 
-        public JsonDocument WorkspaceOptions = null;
+        public object WorkspaceOptions = null;
 
         public ConcurrentDictionary<string, PublishDiagnosticParams> diagnostics = new ConcurrentDictionary<string, PublishDiagnosticParams>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, ITextView> textViews = new ConcurrentDictionary<string, ITextView>(Environment.ProcessorCount * 2, 32);
@@ -150,7 +154,7 @@ namespace SlangClient
         {
             try
             {
-                WorkspaceOptions = JsonDocument.Parse(File.ReadAllText(Path.Combine(ConfigFileWatcher.Path, ConfigFileWatcher.Filter)));
+                WorkspaceOptions = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(ConfigFileWatcher.Path, ConfigFileWatcher.Filter)));
             }
             catch (Exception)
             {
@@ -160,6 +164,7 @@ namespace SlangClient
             if (WorkspaceOptions != null)
             {
                 DidChangeConfigurationParams configParams = new DidChangeConfigurationParams();
+                configParams.Settings = WorkspaceOptions;
                 Task task = Task.Run(async () => await _rpc.NotifyAsync(Methods.WorkspaceDidChangeConfigurationName, configParams));
             }
         }

@@ -33,6 +33,19 @@ namespace SlangClient
         {
             m_ClassificationService = service;
             m_View = view;
+            m_tags = new ClassificationTag[]
+            {
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Type)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_EnumMember)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Variable)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Parameter)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Function)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Property)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Namespace) ),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Keyword)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Macro)),
+                new ClassificationTag(m_ClassificationService.GetClassificationType(PredefinedClassificationTypeNames.String)),
+            };
             RegisterInWorkspace();
         }
 
@@ -50,6 +63,8 @@ namespace SlangClient
 
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
+        private ClassificationTag[] m_tags;
+
         public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
             RegisterInWorkspace();
@@ -59,8 +74,6 @@ namespace SlangClient
             foreach (var span in spans)
             {
                 ITextSnapshot snapshot = spans[0].Snapshot;
-                ITextBuffer textBuffer = snapshot.TextBuffer;
-                
                 int iLine = 0;
                 int nStartChar = 0;
                 for (int idx = 0; idx < m_SemanticTokens.Data.Length; idx += 5)
@@ -78,6 +91,8 @@ namespace SlangClient
                         int nLength = m_SemanticTokens.Data[idx + 2];
                         nTokenType = m_SemanticTokens.Data[idx + 3];
                         int nTokenModifier = m_SemanticTokens.Data[idx + 4];
+                        if (nTokenType >= m_tags.Length)
+                            continue;
 
                         ITextSnapshotLine startLine = snapshot.GetLineFromLineNumber(iLine);
                         SnapshotPoint startPoint = new SnapshotPoint(snapshot, startLine.Start + nStartChar);
@@ -92,55 +107,8 @@ namespace SlangClient
                     
                     if (span.IntersectsWith(sp.Span))
                     {
-                        IClassificationType classificationType = m_ClassificationService.GetClassificationType(PredefinedClassificationTypeNames.Keyword);
-                        switch (nTokenType)
-                        {
-                            // type
-                            case 0:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Keyword);
-                                break;
-                            // enumMember
-                            case 1:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_EnumMember);
-                                break;
-                            // Variable
-                            case 2:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Variable);
-                                break;
-                            // Parameter
-                            case 3:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Parameter);
-                                break;
-                            // Function
-                            case 4:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Function);
-                                break;
-                            // Property
-                            case 5:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Property);
-                                break;
-                            // Namespace
-                            case 6:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Namespace);
-                                break;
-                            // keyword
-                            case 7:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Keyword);
-                                break;
-                            // Macro
-                            case 8:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_Macro);
-                                break;
-                            // string
-                            case 9:
-                                classificationType = m_ClassificationService.GetClassificationType(SlangClassificationDefintions.Slang_String);
-                                break;
-
-                        }
-
-                        var classificationTag = new ClassificationTag(classificationType);
+                        var classificationTag = m_tags[nTokenType];
                         yield return new TagSpan<IClassificationTag>(sp, classificationTag);
-
                     }
                 }
             }
