@@ -1,4 +1,4 @@
-# slang-vs-extension
+# Slang Visual Studio Extension
 This extension provides intellisense support for the Slang shading language in Visual Studio 2022.
 
 Implemented features:
