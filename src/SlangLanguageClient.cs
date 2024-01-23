@@ -172,7 +172,7 @@ namespace SlangClient
         private string FindConfigFile(string path)
         {
             string currentPath = Path.GetDirectoryName(path);
-            string filePath = Path.Combine(currentPath, "slangshaderconfig.json");
+            string filePath = Path.Combine(currentPath, "slangdconfig.json");
             if (File.Exists(filePath))
             {
                 return filePath;

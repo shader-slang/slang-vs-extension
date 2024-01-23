@@ -1,6 +1,13 @@
-﻿using Microsoft.VisualStudio.Shell.Interop;
+﻿using EnvDTE;
+using Microsoft.Build.Framework.XamlTypes;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Package;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
+using System;
 using System.ComponentModel.Composition;
 using System.Windows.Media;
 
@@ -8,16 +15,16 @@ namespace SlangClient
 {
     internal sealed class SlangClassificationDefintions
     {
-        public const string Slang_Type = "Slang.Type";
-        public const string Slang_EnumMember = "Slang.EnumMember";
-        public const string Slang_Variable = "Slang.Variable";
-        public const string Slang_Parameter = "Slang.Parameter";
-        public const string Slang_Function = "Slang.Function";
-        public const string Slang_Property = "Slang.Property";
-        public const string Slang_Namespace = "Slang.Namespace";
-        public const string Slang_Keyword = "Slang.Keyword";
-        public const string Slang_Macro = "Slang.Macro";
-        public const string Slang_String = "Slang.String";
+        public const string Slang_Type = "Slang Type";
+        public const string Slang_EnumMember = "Slang EnumMember";
+        public const string Slang_Variable = "Slang Variable";
+        public const string Slang_Parameter = "Slang Parameter";
+        public const string Slang_Function = "Slang Function";
+        public const string Slang_Property = "Slang Property";
+        public const string Slang_Namespace = "Slang Namespace";
+        public const string Slang_Keyword = "Slang Keyword";
+        public const string Slang_Macro = "Slang Macro";
+        public const string Slang_String = "Slang String";
 
     }
     #region SlangKeyword
@@ -38,7 +45,7 @@ namespace SlangClient
         public SlangKeyword()
         {
             DisplayName = SlangClassificationDefintions.Slang_Keyword;
-            ForegroundColor = Colors.Gold;
+            //ForegroundColor = Colors.Gold;
         }
     }
     #endregion
@@ -61,7 +68,7 @@ namespace SlangClient
         public SlangType()
         {
             DisplayName = SlangClassificationDefintions.Slang_Type;
-            ForegroundColor = Colors.Pink;
+            //ForegroundColor = Colors.Pink;
         }
     }
     #endregion
@@ -84,7 +91,7 @@ namespace SlangClient
         public SlangEnumMember()
         {
             DisplayName = SlangClassificationDefintions.Slang_EnumMember;
-            ForegroundColor = Color.FromRgb( 0xb9, 0x77, 0x1e);
+            //ForegroundColor = System.Windows.Media.Color.FromRgb( 0xb9, 0x77, 0x1e);
         }
     }
     #endregion
@@ -107,7 +114,7 @@ namespace SlangClient
         public SlangVariable()
         {
             DisplayName = SlangClassificationDefintions.Slang_Variable;
-            ForegroundColor = Colors.DarkKhaki;
+            //ForegroundColor = Colors.DarkKhaki;
         }
     }
     #endregion
@@ -130,7 +137,8 @@ namespace SlangClient
         public SlangParameter()
         {
             DisplayName = SlangClassificationDefintions.Slang_Parameter;
-            ForegroundColor = Colors.OliveDrab;
+            
+            //ForegroundColor = Colors.OliveDrab;
         }
     }
     #endregion
@@ -153,7 +161,7 @@ namespace SlangClient
         public SlangFunction()
         {
             DisplayName = SlangClassificationDefintions.Slang_Function;
-            ForegroundColor = Color.FromRgb( 0xff, 0x80, 0 );
+            //ForegroundColor = Color.FromRgb( 0xff, 0x80, 0 );
         }
     }
     #endregion
@@ -176,7 +184,7 @@ namespace SlangClient
         public SlangProperty()
         {
             DisplayName = SlangClassificationDefintions.Slang_Property;
-            ForegroundColor = Color.FromRgb( 0xff, 0x80, 0 );
+            //ForegroundColor = Color.FromRgb( 0xff, 0x80, 0 );
         }
     }
     #endregion
@@ -199,7 +207,7 @@ namespace SlangClient
         public SlangNamespace()
         {
             DisplayName = SlangClassificationDefintions.Slang_Namespace;
-            ForegroundColor = Color.FromRgb( 0xb8, 0xd7, 0xa3 );
+            //ForegroundColor = Color.FromRgb( 0xb8, 0xd7, 0xa3 );
         }
     }
     #endregion
@@ -222,7 +230,7 @@ namespace SlangClient
         public SlangMacro()
         {
             DisplayName = SlangClassificationDefintions.Slang_Macro;
-            ForegroundColor = Color.FromRgb( 0xbd, 0x63, 0xc5 );
+            //ForegroundColor = Color.FromRgb( 0xbd, 0x63, 0xc5 );
         }
     }
     #endregion
@@ -245,9 +253,47 @@ namespace SlangClient
         public SlangString()
         {
             DisplayName = SlangClassificationDefintions.Slang_String;
-            ForegroundColor = Color.FromRgb(232, 201, 187);
+            //ForegroundColor = Color.FromRgb(232, 201, 187);
         }
     }
     #endregion
 
+
+    #region Autogenerated resource keys
+    class SlangColorKeys
+    {
+        // These resource keys are generated by Visual Studio Extension Color Editor, and should be replaced when new colors are added to this category.
+        public static readonly Guid Category = new Guid("4b758f8f-f59a-4a88-b6be-49ecf08521b5");
+
+        private static ThemeResourceKey _SlangenumTextColorKey;
+        private static ThemeResourceKey _SlangenumTextBrushKey;
+        public static ThemeResourceKey SlangenumTextColorKey { get { return _SlangenumTextColorKey ?? (_SlangenumTextColorKey = new ThemeResourceKey(Category, "Slang enum", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangenumTextBrushKey { get { return _SlangenumTextBrushKey ?? (_SlangenumTextBrushKey = new ThemeResourceKey(Category, "Slang enum", ThemeResourceKeyType.ForegroundBrush)); } }
+
+        private static ThemeResourceKey _SlangkeywordTextColorKey;
+        private static ThemeResourceKey _SlangkeywordTextBrushKey;
+        public static ThemeResourceKey SlangkeywordTextColorKey { get { return _SlangkeywordTextColorKey ?? (_SlangkeywordTextColorKey = new ThemeResourceKey(Category, "Slang keyword", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangkeywordTextBrushKey { get { return _SlangkeywordTextBrushKey ?? (_SlangkeywordTextBrushKey = new ThemeResourceKey(Category, "Slang keyword", ThemeResourceKeyType.ForegroundBrush)); } }
+
+        private static ThemeResourceKey _SlangmethodTextColorKey;
+        private static ThemeResourceKey _SlangmethodTextBrushKey;
+        public static ThemeResourceKey SlangmethodTextColorKey { get { return _SlangmethodTextColorKey ?? (_SlangmethodTextColorKey = new ThemeResourceKey(Category, "Slang method", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangmethodTextBrushKey { get { return _SlangmethodTextBrushKey ?? (_SlangmethodTextBrushKey = new ThemeResourceKey(Category, "Slang method", ThemeResourceKeyType.ForegroundBrush)); } }
+
+        private static ThemeResourceKey _SlangparameterTextColorKey;
+        private static ThemeResourceKey _SlangparameterTextBrushKey;
+        public static ThemeResourceKey SlangparameterTextColorKey { get { return _SlangparameterTextColorKey ?? (_SlangparameterTextColorKey = new ThemeResourceKey(Category, "Slang parameter", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangparameterTextBrushKey { get { return _SlangparameterTextBrushKey ?? (_SlangparameterTextBrushKey = new ThemeResourceKey(Category, "Slang parameter", ThemeResourceKeyType.ForegroundBrush)); } }
+
+        private static ThemeResourceKey _SlangtypeTextColorKey;
+        private static ThemeResourceKey _SlangtypeTextBrushKey;
+        public static ThemeResourceKey SlangtypeTextColorKey { get { return _SlangtypeTextColorKey ?? (_SlangtypeTextColorKey = new ThemeResourceKey(Category, "Slang type", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangtypeTextBrushKey { get { return _SlangtypeTextBrushKey ?? (_SlangtypeTextBrushKey = new ThemeResourceKey(Category, "Slang type", ThemeResourceKeyType.ForegroundBrush)); } }
+
+        private static ThemeResourceKey _SlangvariableTextColorKey;
+        private static ThemeResourceKey _SlangvariableTextBrushKey;
+        public static ThemeResourceKey SlangvariableTextColorKey { get { return _SlangvariableTextColorKey ?? (_SlangvariableTextColorKey = new ThemeResourceKey(Category, "Slang variable", ThemeResourceKeyType.ForegroundColor)); } }
+        public static ThemeResourceKey SlangvariableTextBrushKey { get { return _SlangvariableTextBrushKey ?? (_SlangvariableTextBrushKey = new ThemeResourceKey(Category, "Slang variable", ThemeResourceKeyType.ForegroundBrush)); } }
+    }
+    #endregion
 }

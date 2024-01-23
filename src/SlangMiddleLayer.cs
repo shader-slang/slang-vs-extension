@@ -190,7 +190,7 @@ namespace SlangClient
                                 
 
                                 ITextSnapshotLine endLine = snapshot.GetLineFromLineNumber(hover.Range.End.Line);
-                                SnapshotPoint endPoint = new SnapshotPoint(snapshot, endLine.End + hover.Range.End.Character);
+                                SnapshotPoint endPoint = new SnapshotPoint(snapshot, endLine.Start + hover.Range.End.Character);
 
                                 if (hover.Range.End.Character < 0 ||  hover.Range.End.Character > endLine.Length)
                                 {

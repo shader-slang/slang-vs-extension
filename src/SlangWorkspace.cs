@@ -134,6 +134,10 @@ namespace SlangClient
             else
             {
                 m_HighlightTaggersDictionary.TryAdd(path, tagger);
+                if (m_SemanticTokensDictionary.TryGetValue(path, out var tokens))
+                {
+                    tagger.RefreshSymbols(tokens);
+                }
             }
         }
 
