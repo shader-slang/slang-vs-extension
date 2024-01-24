@@ -101,7 +101,11 @@ namespace SlangClient
             process.StartInfo = info;
             if (process.Start())
             {
+#if DEBUG
                 _connection = new Connection(new DebugStream(process.StandardOutput.BaseStream), new DebugStream(process.StandardInput.BaseStream));
+#else
+                _connection = new Connection(process.StandardOutput.BaseStream, process.StandardInput.BaseStream);
+#endif
                 return _connection;
             }
             return null;
@@ -154,18 +158,43 @@ namespace SlangClient
         {
             try
             {
-                WorkspaceOptions = JsonConvert.DeserializeObject(File.ReadAllText(Path.Combine(ConfigFileWatcher.Path, ConfigFileWatcher.Filter)));
+                dynamic config = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(Path.Combine(ConfigFileWatcher.Path, ConfigFileWatcher.Filter)));
+                if (config == null)
+                {
+                    WorkspaceOptions = null;
+                    return;
+                }
+
+                // Convert relative paths in searchPath to absolute paths.
+                dynamic searchPath = config?["slang.additionalSearchPaths"];
+                if (searchPath != null && searchPath.Count != 0)
+                {
+                    for (int i = 0; i < searchPath.Count; i++)
+                    {
+                        try
+                        {
+                            var pathStr = searchPath[i].ToString();
+                            if (!Path.IsPathRooted(pathStr))
+                            {
+                                pathStr = Path.GetFullPath(Path.Combine(ConfigFileWatcher.Path, pathStr));
+                                searchPath[i] = pathStr;
+                            }
+                        }
+                        catch (Exception)
+                        { }
+                    }
+                    config["slang.additionalSearchPaths"] = searchPath;
+                }
+                WorkspaceOptions = config;
+
+                // Send the config to language server.
+                DidChangeConfigurationParams configParams = new DidChangeConfigurationParams();
+                configParams.Settings = WorkspaceOptions;
+                Task task = Task.Run(async () => await _rpc.NotifyAsync(Methods.WorkspaceDidChangeConfigurationName, configParams));
             }
             catch (Exception)
             {
                 WorkspaceOptions = null;
-            }
-
-            if (WorkspaceOptions != null)
-            {
-                DidChangeConfigurationParams configParams = new DidChangeConfigurationParams();
-                configParams.Settings = WorkspaceOptions;
-                Task task = Task.Run(async () => await _rpc.NotifyAsync(Methods.WorkspaceDidChangeConfigurationName, configParams));
             }
         }
 

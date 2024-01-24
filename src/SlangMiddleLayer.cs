@@ -31,6 +31,7 @@ namespace SlangClient
                 case Methods.TextDocumentHoverName:
                 case Methods.TextDocumentCompletionName:
                 case Methods.TextDocumentCompletionResolveName:
+                case Methods.TextDocumentDocumentSymbolName:
                     return true;
             }
             return false;
@@ -94,7 +95,7 @@ namespace SlangClient
                     break;
                 case Methods.TextDocumentPublishDiagnosticsName:
                     PublishDiagnosticParams p = methodParam.ToObject<PublishDiagnosticParams>(new Newtonsoft.Json.JsonSerializer() { MissingMemberHandling = Newtonsoft.Json.MissingMemberHandling.Ignore });
-
+                    await sendNotification(methodParam);
                     if (SlangLanguageClient.Instance != null)
                     {
                         SlangWorkspace.Instance?.NotifyDiagnosticsReady(p);
@@ -188,13 +189,12 @@ namespace SlangClient
                                 }
                                 SnapshotPoint startPoint = new SnapshotPoint(snapshot, startLine.Start + hover.Range.Start.Character);
                                 
-
                                 ITextSnapshotLine endLine = snapshot.GetLineFromLineNumber(hover.Range.End.Line);
                                 SnapshotPoint endPoint = new SnapshotPoint(snapshot, endLine.Start + hover.Range.End.Character);
 
                                 if (hover.Range.End.Character < 0 ||  hover.Range.End.Character > endLine.Length)
                                 {
-                                    hover.Range = null;
+                                    hover.Range.End = hover.Range.Start;
                                     token = JToken.FromObject(hover);
                                     return token;
                                 }
@@ -203,7 +203,15 @@ namespace SlangClient
                         }
                         return token;
                     }
-                    
+                case Methods.TextDocumentDocumentSymbolName:
+                    {
+                        token = await sendRequest(methodParam);
+                        DocumentSymbol[] symbols = token.ToObject<DocumentSymbol[]>();
+
+                        // TODO: Visual Studio is not responding properly to this result,
+                        // we may need to manually hook it up with the extension API.
+                        return JToken.FromObject(symbols);
+                    }
             }
 
             token = await sendRequest(methodParam);

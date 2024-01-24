@@ -65,7 +65,13 @@ namespace SlangClient
                 {
                     foreach (Diagnostic d in diagnosticParams.Diagnostics)
                     {
+                        if (d.Range.Start.Line >= snapshot.LineCount)
+                            yield break;
+
                         ITextSnapshotLine startLine = snapshot.GetLineFromLineNumber(d.Range.Start.Line);
+                        if (d.Range.Start.Character >= startLine.Length)
+                            continue;
+
                         SnapshotPoint startPoint = new SnapshotPoint(snapshot, startLine.Start + d.Range.Start.Character);
 
                         TextExtent word = m_TextStructureNavigator.GetExtentOfWord(startPoint);
@@ -76,8 +82,8 @@ namespace SlangClient
                         {
                             //Before we retry, make sure it is worthwhile 
                             if (word.Span.Start != startPoint
-                                 || startPoint == startPoint.GetContainingLine().Start
-                                 || char.IsWhiteSpace((startPoint - 1).GetChar()))
+                                    || startPoint == startPoint.GetContainingLine().Start
+                                    || char.IsWhiteSpace((startPoint - 1).GetChar()))
                             {
                                 foundWord = false;
                             }

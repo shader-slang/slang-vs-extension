@@ -50,19 +50,9 @@ namespace SlangClient
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            //long ticks = DateTime.Now.Ticks;
+#if false
             string str = Encoding.UTF8.GetString(buffer, offset, count);
-            //Debug.WriteLine(ticks.ToString() + " Stream Write\n");
-            //Debug.WriteLine(ticks.ToString() + " -------------------\n");
-            //Debug.WriteLine(ticks.ToString() + str);
-            //Debug.WriteLine(ticks.ToString() + " ------------------\n");
-
-            if (str.Contains("NotificationReceived"))
-            {
-                // Hack to avoid VS2022 send NotificationReceived messages to server which doesn't process them and client restarts the server.
-                return;
-            }
-
+#endif
             theStream.Write(buffer, offset, count);
         }
     }
