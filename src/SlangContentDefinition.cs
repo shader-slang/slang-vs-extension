@@ -6,6 +6,7 @@ namespace SlangClient
 {
     public class SlangContentDefinition
     {
+        public const string SlangContentType = "slang";
         [Export]
         [Name("slang")]
         [BaseDefinition(CodeRemoteContentDefinition.CodeRemoteContentTypeName)]
@@ -13,17 +14,17 @@ namespace SlangClient
 
         [Export]
         [FileExtension(".vfx")]
-        [ContentType("slang")]
+        [ContentType(SlangContentType)]
         internal static FileExtensionToContentTypeDefinition VfxFileExtensionDefinition = null;
 
         [Export]
         [FileExtension(".fxc")]
-        [ContentType("slang")]
+        [ContentType(SlangContentType)]
         internal static FileExtensionToContentTypeDefinition FxcFileExtensionDefinition = null;
 
         [Export]
         [FileExtension(".slang")]
-        [ContentType("slang")]
+        [ContentType(SlangContentType)]
         internal static FileExtensionToContentTypeDefinition SlangFileExtensionDefinition = null;
 
     }

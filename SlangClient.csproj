@@ -45,6 +45,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="src\CommentHelper.cs" />
     <Compile Include="src\Controls\SlangToolsControl.xaml.cs">
       <DependentUpon>SlangToolsControl.xaml</DependentUpon>
     </Compile>
@@ -52,6 +53,7 @@
     <Compile Include="src\Controls\SlangToolWindow.cs" />
     <Compile Include="src\DebugSteam.cs" />
     <Compile Include="src\HightlightFormat.cs" />
+    <Compile Include="src\SlangCommands.cs" />
     <Compile Include="src\SlangContentDefinition.cs" />
     <Compile Include="src\SlangLanguageClient.cs" />
     <Compile Include="src\SlangMiddleLayer.cs" />
