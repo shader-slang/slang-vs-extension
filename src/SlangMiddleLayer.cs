@@ -1,4 +1,5 @@
-using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Core.Imaging;
+using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Text;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SlangClient
@@ -32,6 +34,7 @@ namespace SlangClient
                 case Methods.TextDocumentCompletionName:
                 case Methods.TextDocumentCompletionResolveName:
                 case Methods.TextDocumentDocumentSymbolName:
+                case VSMethods.GetProjectContextsName:
                     return true;
             }
             return false;
@@ -78,10 +81,10 @@ namespace SlangClient
                 case Methods.TextDocumentDidOpenName:
                     await sendNotification(methodParam);
                     DidOpenTextDocumentParams didOpenTextDocumentParams = methodParam.ToObject<DidOpenTextDocumentParams>(new Newtonsoft.Json.JsonSerializer() { MissingMemberHandling = Newtonsoft.Json.MissingMemberHandling.Ignore });
-
-                    if( SlangLanguageClient.Instance.GetNewConfigurationPath(didOpenTextDocumentParams.TextDocument.Uri) == null )
+                    var configPath = SlangLanguageClient.Instance.GetNewConfigurationPath(didOpenTextDocumentParams.TextDocument.Uri);
+                    if (configPath != null)
                     {
-                        
+                        SlangLanguageClient.Instance.UpdateConfiguration(new Uri(configPath));
                     }
                     await RequestSemanticSymbolsAsync(didOpenTextDocumentParams.TextDocument.Uri);
                     break;
@@ -95,10 +98,13 @@ namespace SlangClient
                     break;
                 case Methods.TextDocumentPublishDiagnosticsName:
                     PublishDiagnosticParams p = methodParam.ToObject<PublishDiagnosticParams>(new Newtonsoft.Json.JsonSerializer() { MissingMemberHandling = Newtonsoft.Json.MissingMemberHandling.Ignore });
+                    foreach (var d in p.Diagnostics)
+                    {
+                        Debug.WriteLine(d.Range.ToString());
+                    }
                     await sendNotification(methodParam);
                     if (SlangLanguageClient.Instance != null)
                     {
-                        SlangWorkspace.Instance?.NotifyDiagnosticsReady(p);
                         SlangLanguageClient.Instance.UpdateConfiguration(p.Uri);
                     }
                     break;
@@ -205,18 +211,93 @@ namespace SlangClient
                     }
                 case Methods.TextDocumentDocumentSymbolName:
                     {
+                        var symParmas = methodParam.ToObject<DocumentSymbolParams>();
                         token = await sendRequest(methodParam);
                         DocumentSymbol[] symbols = token.ToObject<DocumentSymbol[]>();
-
-                        // TODO: Visual Studio is not responding properly to this result,
-                        // we may need to manually hook it up with the extension API.
-                        return JToken.FromObject(symbols);
+                        List<VSSymbolInformation> flattendSymbols = new List<VSSymbolInformation>();
+                        foreach (var symbol in symbols)
+                            GetVSSymbolInfoArray(flattendSymbols, "", symParmas.TextDocument.Uri, symbol);
+                        var resultToken = JToken.FromObject(flattendSymbols.ToArray());
+                        return resultToken;
                     }
+                case VSMethods.GetProjectContextsName:
+                    {
+                        var result = new VSProjectContextList();
+                        result.ProjectContexts = new VSProjectContext[1] {
+                            new VSProjectContext()
+                            {
+                                Id = "SlangProject",
+                                Label = "(Slang Module)",
+                                Kind = VSProjectKind.CPlusPlus
+                            }
+                        };
+                        result.DefaultIndex = 0;
+                        return JToken.FromObject(result);
+                    }
+
             }
 
             token = await sendRequest(methodParam);
             return token;
         }
 
+        void GetVSSymbolInfoArray(List<VSSymbolInformation> list, String parentName, Uri uri, DocumentSymbol symbol)
+        {
+            VSSymbolInformation vsSymbol = new VSSymbolInformation();
+            StringBuilder nameSB = new StringBuilder();
+            nameSB.Append(parentName);
+            if (nameSB.Length > 0)
+                nameSB.Append(".");
+            nameSB.Append(symbol.Name);
+            vsSymbol.Name = nameSB.ToString();
+            vsSymbol.Kind = symbol.Kind;
+            vsSymbol.Location = new Location();
+            vsSymbol.Location.Uri = uri;
+            vsSymbol.Location.Range = symbol.Range;
+            vsSymbol.Description = symbol.Detail;
+            switch (symbol.Kind)
+            {
+                case SymbolKind.Function:
+                case SymbolKind.Property:
+                case SymbolKind.Variable:
+                case SymbolKind.Field:
+                case SymbolKind.Method:
+                case SymbolKind.EnumMember:
+                    if (parentName.Length == 0)
+                        vsSymbol.ContainerName = "(Global Scope)";
+                    else
+                        vsSymbol.ContainerName = parentName;
+                    vsSymbol.Name = symbol.Name;
+                    break;
+                default:
+                    vsSymbol.ContainerName = vsSymbol.Name;
+                    ImageId icon = new ImageId();
+                    switch (vsSymbol.Kind)
+                    {
+                    case SymbolKind.Struct:
+                        icon = KnownMonikers.Structure.ToImageId();
+                        break;
+                    case SymbolKind.Namespace:
+                        icon = KnownMonikers.Namespace.ToImageId();
+                        break;
+                    case SymbolKind.Class:
+                        icon = KnownMonikers.Class.ToImageId();
+                        break;
+                    case SymbolKind.Enum:
+                        icon = KnownMonikers.Enumeration.ToImageId();
+                        break;
+                    }
+                    vsSymbol.Icon = new VSImageId();
+                    vsSymbol.Icon.Guid = icon.Guid;
+                    vsSymbol.Icon.Id = icon.Id;
+                    break;
+            }
+            list.Add(vsSymbol);
+            if (symbol.Children != null)
+            {
+                foreach (var child in symbol.Children)
+                    GetVSSymbolInfoArray(list, vsSymbol.Name, uri, child);
+            }
+        }
     }
 }

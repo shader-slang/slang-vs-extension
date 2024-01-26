@@ -58,12 +58,9 @@
     <Compile Include="src\SlangLanguageClient.cs" />
     <Compile Include="src\SlangMiddleLayer.cs" />
     <Compile Include="src\SlangServerMessageTarget.cs" />
-    <Compile Include="src\SlangSquiggleTagger.cs" />
-    <Compile Include="src\SlangSquiggleTaggerProvider.cs" />
     <Compile Include="src\SlangTokenHighlightTagger.cs" />
     <Compile Include="src\SlangTokenHighlightTaggerProvider.cs" />
     <Compile Include="src\SlangWorkspace.cs" />
-    <Compile Include="src\SlangLanguageService.cs" />
     <Compile Include="src\SlangToolWindowCommand.cs" />
     <Compile Include="src\SlangClientPackage.cs" />
   </ItemGroup>

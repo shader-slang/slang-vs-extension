@@ -1,7 +1,5 @@
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
@@ -24,7 +22,6 @@ namespace SlangClient
         SVsServiceProvider m_ServiceProvider { get; set; }
 
         public ConcurrentDictionary<string, ITextView> m_TextViewsDictionary = new ConcurrentDictionary<string, ITextView>(Environment.ProcessorCount * 2, 32);
-        public ConcurrentDictionary<string, SlangSquiggleTagger> m_DiagnosticTaggersDictionary = new ConcurrentDictionary<string, SlangSquiggleTagger>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, SlangTokenHighlightTagger> m_HighlightTaggersDictionary = new ConcurrentDictionary<string, SlangTokenHighlightTagger>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, SemanticTokens> m_SemanticTokensDictionary = new ConcurrentDictionary<string, SemanticTokens>(Environment.ProcessorCount * 2, 32);
 
@@ -99,34 +96,19 @@ namespace SlangClient
         {
             ITextView view = (ITextView)sender;
             view.Closed -= TextView_Closed;
-            var item = m_TextViewsDictionary.First(kvp => kvp.Value == view);
-
-            ITextView removeView;
-            m_TextViewsDictionary.TryRemove(item.Key, out removeView);
-        }
-
-        public void RegisterTagger(ITextBuffer textBuffer, SlangSquiggleTagger tagger)
-        {
-            string path = GetPathFromTextBuffer(textBuffer);
-            if (m_DiagnosticTaggersDictionary.ContainsKey(path))
-            {
-                
+            var item = m_TextViewsDictionary.FirstOrDefault(kvp => kvp.Value == view);
+            if (item.Value != null)
+            { 
+                ITextView removeView;
+                m_TextViewsDictionary.TryRemove(item.Key, out removeView);
             }
-            else
-            {
-                m_DiagnosticTaggersDictionary.TryAdd(path, tagger);
-            }
-        }
-
-        public void UnRegisterTagger(ITextBuffer textBuffer, SlangSquiggleTagger tagger)
-        {
-            string path = GetPathFromTextBuffer(textBuffer);
-            m_DiagnosticTaggersDictionary.TryRemove(path, out var taggerout);
         }
 
         public void RegisterHighlight(ITextBuffer textBuffer, SlangTokenHighlightTagger tagger)
         {
             string path = GetPathFromTextBuffer(textBuffer);
+            if (path == null)
+                return;
             if (m_HighlightTaggersDictionary.ContainsKey(path))
             {
                 
@@ -144,19 +126,11 @@ namespace SlangClient
         public void UnRegisterHighlight(ITextBuffer textBuffer, SlangTokenHighlightTagger tagger)
         {
             string path = GetPathFromTextBuffer(textBuffer);
+            if (path == null)
+                return;
             m_HighlightTaggersDictionary.TryRemove(path, out var taggerout);
         }
 
-
-        public void NotifyDiagnosticsReady(PublishDiagnosticParams diagnosticsParams)
-        {
-            string path = Uri.UnescapeDataString(diagnosticsParams.Uri.AbsoluteUri);
-
-            if (m_DiagnosticTaggersDictionary.TryGetValue(path, out var tagger))
-            {
-                tagger.RefreshDiagnostics(diagnosticsParams);
-            }
-        }
 
         public void NotifySymbolsReady(string path, SemanticTokens semanticTokens)
         {
