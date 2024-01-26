@@ -116,18 +116,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime">
       <Version>17.8.37221</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Language">
-      <Version>17.8.222</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense">
-      <Version>17.8.222</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Language.NavigateTo.Interfaces">
-      <Version>17.8.222</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification">
-      <Version>17.8.222</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client">
       <Version>17.8.36</Version>
     </PackageReference>
@@ -136,9 +124,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Protocol.Extensions">
       <Version>17.2.8</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Package.LanguageService.15.0">
-      <Version>17.8.37221</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VisualStudio.Utilities">
