@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.LanguageServer.Client;
 using Microsoft.VisualStudio.LanguageServer.Protocol;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Threading;
@@ -14,8 +15,6 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -69,10 +68,33 @@ namespace SlangClient
         public event AsyncEventHandler<EventArgs> StopAsync;
 
         public object WorkspaceOptions = null;
+        public string ClangFormatLocation = null;
 
         public ConcurrentDictionary<string, PublishDiagnosticParams> diagnostics = new ConcurrentDictionary<string, PublishDiagnosticParams>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, ITextView> textViews = new ConcurrentDictionary<string, ITextView>(Environment.ProcessorCount * 2, 32);
         System.Diagnostics.Process process;
+
+        private async Task<string> FindClangFormatAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            IVsShell shellService = (IVsShell)Package.GetGlobalService(typeof(SVsShell));
+            if (shellService != null)
+            {
+                object installDirObj;
+                shellService.GetProperty((int)__VSSPROPID.VSSPROPID_InstallDirectory, out installDirObj);
+
+                if (installDirObj != null)
+                {
+                    var clangformatDir = Path.GetFullPath(Path.Combine(installDirObj.ToString(), @"../../VC/Tools/Llvm/x64/bin/clang-format.exe"));
+                    if (File.Exists(clangformatDir))
+                    {
+                        return clangformatDir;
+                    }
+                }
+            }
+            return null;
+        }
 
         public async Task<Connection> ActivateAsync(CancellationToken token)
         {
@@ -80,6 +102,8 @@ namespace SlangClient
             textEditorFactoryService.TextViewCreated += OnTextViewCreated;
             Instance = this;
             await Task.Yield();
+            
+            ClangFormatLocation = await FindClangFormatAsync();
 
             if (SlangWorkspace.Instance != null)
             {
@@ -90,7 +114,7 @@ namespace SlangClient
             languageServerPath = Path.Combine(languageServerPath, "SlangServer", "slangd.exe");
             ProcessStartInfo info = new ProcessStartInfo();
             info.FileName = languageServerPath;
-            info.Arguments = "";
+            info.Arguments = "-vs";
             info.RedirectStandardInput = true;
             info.RedirectStandardOutput = true;
             info.UseShellExecute = false;
@@ -185,6 +209,13 @@ namespace SlangClient
                     }
                     config["slang.additionalSearchPaths"] = searchPath;
                 }
+
+                dynamic clangFormatLocation = config?["slang.format.clangFormatLocation"];
+                if (clangFormatLocation == null && ClangFormatLocation!= null)
+                {
+                    // Use clang-format that comes with visual studio.
+                    config["slang.format.clangFormatLocation"] = ClangFormatLocation;
+                }
                 WorkspaceOptions = config;
 
                 // Send the config to language server.
@@ -263,16 +294,15 @@ namespace SlangClient
                     args.TextView.Closed += TextView_Closed;
                 }
             }
-
         }
 
         private void TextView_Closed(object sender, EventArgs e)
         {
             ITextView view = (ITextView)sender;
             view.Closed -= TextView_Closed;
-            if (textViews.Any())
-            {
-                var item = textViews.First(kvp => kvp.Value == view);
+            var item = textViews.FirstOrDefault(kvp => kvp.Value == view);
+            if ( item.Value != null)
+            { 
                 ITextView removeView;
                 textViews.TryRemove(item.Key, out removeView);
             }
@@ -309,6 +339,4 @@ namespace SlangClient
             return Task.CompletedTask;
         }
     }
-
-
 }
