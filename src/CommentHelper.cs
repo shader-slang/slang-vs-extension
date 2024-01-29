@@ -100,7 +100,7 @@ namespace SlangClient
             eCommentType commentType = eCommentType.None;
             using (var edit = snapshot.TextBuffer.CreateEdit())
             {
-                if (!SpanIncludesAllTextOnIncludedLines(view, start, end) && start.GetContainingLine().LineNumber == end.GetContainingLine().LineNumber)
+                if (!SpanIncludesAllTextOnIncludedLines(view, start, end) && IsNonEmptyBlock(view, start, end) )
                 {
                     commentType = eCommentType.Block;
                     edit.Insert(start.Position, CommentOptions.BlockCommentStartString);
@@ -140,6 +140,19 @@ namespace SlangClient
                 edit.Apply();
                 return commentType;
             }
+        }
+        private static bool IsNonEmptyBlock(ITextView view, SnapshotPoint start, SnapshotPoint end)
+        {
+            if (start.GetContainingLine().LineNumber == end.GetContainingLine().LineNumber)
+            {
+                var text = view.Selection.SelectedSpans.FirstOrDefault().GetText();
+                int firstNonWhitespace = IndexOfNonWhitespaceCharacter(text);
+                if (firstNonWhitespace >= 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static int IndexOfNonWhitespaceCharacter(string text)
