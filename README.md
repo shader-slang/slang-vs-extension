@@ -1,5 +1,7 @@
 # Slang Visual Studio Extension
-This extension provides intellisense support for the Slang shading language in Visual Studio 2022.
+This is the official **Visual Studio** extension for the Slang shading language.
+The extension works with Visual Studio 2022 version 17.8 or later.
+For the Visual Studio **Code** extension, please check out https://github.com/shader-slang/slang-vscode-extension.
 
 Implemented features:
  - Auto completion
