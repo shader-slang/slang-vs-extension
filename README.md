@@ -7,7 +7,10 @@ Implemented features:
  - Quick info
  - Signature help
  - Go to definition
- - Diagnostic tagging
+ - Diagnostics
+ - Symbol navigation
+ - Auto formatting
+ - Commenting/Uncommenting
 
 ## Configurations
 You can use a configuration file named "slangdconfig.json" in the same or parent directory of the source file to define macros or search paths for the intellisense engine. The config json follows the same syntax as the settings json of the [Visual Studio Code extension](https://github.com/shader-slang/slang-vscode-extension).
@@ -24,6 +27,20 @@ Here is an example `slangdconfig.json` file:
         "c:\\external-lib\\include"
     ],
     "slang.enableCommitCharactersInAutoCompletion": "on"
+}
+```
+
+## Configuring auto formatting with `.clangformat`
+This extension will attempt to discover `.clangformat` files from the current and parent directories of
+the source file being edited to format the code. It recognizes the configurations in the C# language section.
+Alternatively, you can provide `"slang.format.clangFormatStyle"` setting in `slangdconfig.json` to specify
+your format configuration inline, for example:
+```
+// slangdconfig.json:
+{
+    "slang.predefinedMacros": ["MY_MACRO"],
+    ...
+    ""slang.format.clangFormatStyle": "Microsoft"
 }
 ```
 
