@@ -166,6 +166,18 @@ namespace SlangClient
             return null;
         }
 
+        public void NotifyClangFormatLocation()
+        {
+            // Just send clangformat location to slangd.
+            if (ClangFormatLocation != null)
+            {
+                dynamic configObj = JsonConvert.DeserializeObject<dynamic>("{}");
+                configObj["slang.format.clangFormatLocation"] = ClangFormatLocation;
+                WorkspaceOptions = configObj;
+                NotifyConfigChange();
+            }
+        }
+
         public void UpdateConfiguration(Uri fileUri)
         {
             string configFilePath = GetNewConfigurationPath(fileUri);
@@ -185,7 +197,6 @@ namespace SlangClient
                 dynamic config = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(Path.Combine(ConfigFileWatcher.Path, ConfigFileWatcher.Filter)));
                 if (config == null)
                 {
-                    WorkspaceOptions = null;
                     return;
                 }
 
@@ -211,7 +222,7 @@ namespace SlangClient
                 }
 
                 dynamic clangFormatLocation = config?["slang.format.clangFormatLocation"];
-                if (clangFormatLocation == null && ClangFormatLocation!= null)
+                if (clangFormatLocation == null && ClangFormatLocation != null)
                 {
                     // Use clang-format that comes with visual studio.
                     config["slang.format.clangFormatLocation"] = ClangFormatLocation;
@@ -219,14 +230,19 @@ namespace SlangClient
                 WorkspaceOptions = config;
 
                 // Send the config to language server.
-                DidChangeConfigurationParams configParams = new DidChangeConfigurationParams();
-                configParams.Settings = WorkspaceOptions;
-                Task task = Task.Run(async () => await _rpc.NotifyAsync(Methods.WorkspaceDidChangeConfigurationName, configParams));
+                NotifyConfigChange();
             }
             catch (Exception)
             {
                 WorkspaceOptions = null;
             }
+        }
+
+        private void NotifyConfigChange()
+        {
+            DidChangeConfigurationParams configParams = new DidChangeConfigurationParams();
+            configParams.Settings = WorkspaceOptions;
+            Task task = Task.Run(async () => await _rpc.NotifyAsync(Methods.WorkspaceDidChangeConfigurationName, configParams));
         }
 
         private void ConfigFileWatcher_Changed(object sender, FileSystemEventArgs e)
@@ -325,6 +341,7 @@ namespace SlangClient
 
         public Task OnServerInitializedAsync()
         {
+            NotifyClangFormatLocation();
             return Task.CompletedTask;
         }
 
