@@ -105,6 +105,8 @@ namespace SlangClient
             
             ClangFormatLocation = await FindClangFormatAsync();
 
+            ConfigFileWatcher = null;
+
             if (SlangWorkspace.Instance != null)
             {
                 await SlangWorkspace.Instance.DoSettingsAsync();
