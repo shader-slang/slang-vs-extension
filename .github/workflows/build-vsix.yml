@@ -31,7 +31,7 @@ jobs:
       run: |
         $verName="${{steps.download-win32.outputs.version}}";
         $verName=$verName.SubString(1, ($verName.Length-1));
-        Expand-Archive -Path slang-$verName-win64.zip -DestinationPath .\SlangServer
+        Expand-Archive -Path slang-$verName-windows-x86_64.zip -DestinationPath .\SlangServer
         Copy-Item -Path .\SlangServer\bin\slang.dll .\SlangServer\slang.dll
         Copy-Item -Path .\SlangServer\bin\slangd.exe .\SlangServer\slangd.exe
         MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform="Any CPU"
