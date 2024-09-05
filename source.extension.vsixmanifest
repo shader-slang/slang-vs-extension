@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" ?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="slangclient.6a1f5d32-b0e3-47cb-a5fa-a82635855997" Version="1.1.7" Language="en-US" Publisher="Slang Development Team" />
+        <Identity Id="slangclient.6a1f5d32-b0e3-47cb-a5fa-a82635855997" Version="1.1.8" Language="en-US" Publisher="Slang Development Team" />
         <DisplayName>Slang Language Extension for Visual Studio</DisplayName>
         <Description xml:space="preserve">Provides intellisense support for Slang shader files.</Description>
         <MoreInfo>https://github.com/shader-slang/slang-vs-extension</MoreInfo>
