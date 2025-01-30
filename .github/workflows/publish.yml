@@ -35,7 +35,7 @@ jobs:
         Copy-Item -Path .\SlangServer\bin\slang.dll .\SlangServer\slang.dll
         Copy-Item -Path .\SlangServer\bin\slangd.exe .\SlangServer\slangd.exe
         MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform="Any CPU"
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: slang-vs-extension-vsix
         path: |
