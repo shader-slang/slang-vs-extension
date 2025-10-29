@@ -78,7 +78,12 @@
     </Content>
     <Content Include="Resources\slangicon.png" />
     <Content Include="Resources\slangicon_small.png" />
-    <Content Include="SlangServer\slang.dll">
+    <Content Include="SlangServer\slang.dll" Condition="Exists('SlangServer\slang.dll')">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>SlangServer</VSIXSubPath>
+    </Content>
+    <Content Include="SlangServer\slang-compiler.dll" Condition="Exists('SlangServer\slang-compiler.dll')">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
       <VSIXSubPath>SlangServer</VSIXSubPath>
