@@ -88,6 +88,11 @@
       <IncludeInVSIX>true</IncludeInVSIX>
       <VSIXSubPath>SlangServer</VSIXSubPath>
     </Content>
+    <Content Include="SlangServer\slang-glsl-module.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <VSIXSubPath>SlangServer</VSIXSubPath>
+    </Content>
     <Content Include="SlangServer\slangd.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
