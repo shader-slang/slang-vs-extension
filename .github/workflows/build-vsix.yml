@@ -32,7 +32,9 @@ jobs:
         $verName="${{steps.download-win32.outputs.version}}";
         $verName=$verName.SubString(1, ($verName.Length-1));
         Expand-Archive -Path slang-$verName-windows-x86_64.zip -DestinationPath .\SlangServer
-        Copy-Item -Path .\SlangServer\bin\slang.dll .\SlangServer\slang.dll
+        Copy-Item -Path .\SlangServer\bin\slang.dll .\SlangServer\slang.dll -ErrorAction SilentlyContinue
+        Copy-Item -Path .\SlangServer\bin\slang-compiler.dll .\SlangServer\slang-compiler.dll -ErrorAction SilentlyContinue
+        Copy-Item -Path .\SlangServer\bin\slang-glsl-module.dll .\SlangServer\slang-glsl-module.dll
         Copy-Item -Path .\SlangServer\bin\slangd.exe .\SlangServer\slangd.exe
         MSBuild.exe SlangClient.sln -property:Configuration=Release -property:Platform="Any CPU"
     - uses: actions/upload-artifact@v4
