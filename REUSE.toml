@@ -1,0 +1,13 @@
+version = 1
+SPDX-PackageName = "Slang Visual Studio Extension"
+SPDX-PackageSupplier = "The Khronos Group, Inc."
+SPDX-PackageDownloadLocation = "https://github.com/shader-slang/slang-vs-extension"
+
+[[annotations]]
+path = "**"
+precedence = "closest"
+SPDX-FileCopyrightText = [
+    "2024 shader-slang",
+    "2024-2026 The Khronos Group, Inc.",
+]
+SPDX-License-Identifier = "Apache-2.0 WITH LLVM-exception"
