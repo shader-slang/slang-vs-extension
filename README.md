@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2026 The Khronos Group, Inc.
+SPDX-License-Identifier: CC-BY-4.0
+-->
+
 # Slang Visual Studio Extension
 This is the official **Visual Studio** extension for the Slang shading language.
 The extension works with Visual Studio 2022 version 17.8 or later.
