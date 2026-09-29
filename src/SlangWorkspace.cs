@@ -24,6 +24,7 @@ namespace SlangClient
         public ConcurrentDictionary<string, ITextView> m_TextViewsDictionary = new ConcurrentDictionary<string, ITextView>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, SlangTokenHighlightTagger> m_HighlightTaggersDictionary = new ConcurrentDictionary<string, SlangTokenHighlightTagger>(Environment.ProcessorCount * 2, 32);
         public ConcurrentDictionary<string, SemanticTokens> m_SemanticTokensDictionary = new ConcurrentDictionary<string, SemanticTokens>(Environment.ProcessorCount * 2, 32);
+        public ConcurrentDictionary<string, int> m_DocumentVersionsDictionary = new ConcurrentDictionary<string, int>(Environment.ProcessorCount * 2, 32);
 
         public static SlangWorkspace Instance = null;
 
@@ -142,8 +143,26 @@ namespace SlangClient
             }
         }
 
-        public void NotifySemanticTokensReady(string path, SemanticTokens semanticTokens)
+        // Called whenever the document text changes, so we always know the version of the
+        // most recent edit. Never move the version backwards in case notifications arrive out of order.
+        public void SetDocumentVersion(string path, int version)
         {
+            m_DocumentVersionsDictionary.AddOrUpdate(path, version, (key, existing) => version > existing ? version : existing);
+        }
+
+        public int GetDocumentVersion(string path)
+        {
+            return m_DocumentVersionsDictionary.TryGetValue(path, out var version) ? version : -1;
+        }
+
+        public void NotifySemanticTokensReady(string path, SemanticTokens semanticTokens, int responseVersion)
+        {
+            // A request issued against an older (possibly mid-edit, syntactically broken) version of the
+            // document can complete after a request issued against a newer version. Applying it would leave
+            // highlighting permanently stuck on the stale state, so discard anything that's been superseded.
+            if (responseVersion < GetDocumentVersion(path))
+                return;
+
             m_SemanticTokensDictionary.AddOrUpdate(path, semanticTokens, (key, oldValue) => semanticTokens);
             if (m_HighlightTaggersDictionary.TryGetValue(path, out var tagger))
             {

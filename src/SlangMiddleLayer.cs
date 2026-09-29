@@ -6,10 +6,12 @@ using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SlangClient
@@ -19,8 +21,11 @@ namespace SlangClient
         internal readonly static SlangMiddleLayer Instance = new SlangMiddleLayer();
 
         const string WorkspaceSemanticTokensRefresh = "workspace/semanticTokens/refresh";
+        const int SemanticRequestDebounceMilliseconds = 150;
 
-        DateTime m_LastSemanticRequest;
+        // Per-document debounce: a burst of didChange notifications (e.g. from a single cut/paste)
+        // collapses into one request, with each new edit cancelling the still-pending previous one.
+        readonly ConcurrentDictionary<string, CancellationTokenSource> m_PendingSemanticRequests = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         public bool CanHandle(string methodName)
         {
@@ -44,17 +49,32 @@ namespace SlangClient
 
         public async Task RequestSemanticSymbolsAsync( Uri fileUri, bool bForceRequest = false )
         {
-            if( !bForceRequest )
+            string path = Uri.UnescapeDataString(fileUri.AbsoluteUri);
+
+            var cts = new CancellationTokenSource();
+            m_PendingSemanticRequests.AddOrUpdate(path, cts, (key, existing) =>
             {
-                if( m_LastSemanticRequest == null  )
+                existing.Cancel();
+                existing.Dispose();
+                return cts;
+            });
+
+            if (!bForceRequest)
+            {
+                try
                 {
-                    m_LastSemanticRequest = DateTime.Now;
+                    await Task.Delay(SemanticRequestDebounceMilliseconds, cts.Token);
                 }
-                if( (DateTime.Now - m_LastSemanticRequest).TotalMilliseconds < 2000 )
+                catch (TaskCanceledException)
                 {
+                    // Superseded by a newer edit; that request will run this same logic.
                     return;
                 }
             }
+
+            // Snapshot the version we're requesting against *after* the debounce delay, so it reflects
+            // the latest edit rather than the one that originally scheduled this request.
+            int requestedVersion = SlangWorkspace.Instance.GetDocumentVersion(path);
 
             SemanticTokensParams semanticTokensParams = new SemanticTokensParams();
             semanticTokensParams.TextDocument = new TextDocumentIdentifier
@@ -65,7 +85,7 @@ namespace SlangClient
 
             SemanticTokens result = token.ToObject<SemanticTokens>();
 
-            SlangWorkspace.Instance.NotifySemanticTokensReady(Uri.UnescapeDataString(fileUri.AbsoluteUri), result);
+            SlangWorkspace.Instance.NotifySemanticTokensReady(path, result, requestedVersion);
 
             return;
         }
@@ -86,12 +106,14 @@ namespace SlangClient
                     {
                         SlangLanguageClient.Instance.UpdateConfiguration(new Uri(configPath));
                     }
+                    SlangWorkspace.Instance.SetDocumentVersion(Uri.UnescapeDataString(didOpenTextDocumentParams.TextDocument.Uri.AbsoluteUri), didOpenTextDocumentParams.TextDocument.Version);
                     await RequestSemanticSymbolsAsync(didOpenTextDocumentParams.TextDocument.Uri);
                     break;
                 case Methods.TextDocumentDidChangeName:
                     {
                         await sendNotification(methodParam);
                         DidChangeTextDocumentParams didChangeTextDocumentParams = methodParam.ToObject<DidChangeTextDocumentParams>(new Newtonsoft.Json.JsonSerializer() { MissingMemberHandling = Newtonsoft.Json.MissingMemberHandling.Ignore });
+                        SlangWorkspace.Instance.SetDocumentVersion(Uri.UnescapeDataString(didChangeTextDocumentParams.TextDocument.Uri.AbsoluteUri), didChangeTextDocumentParams.TextDocument.Version);
 
                         await RequestSemanticSymbolsAsync(didChangeTextDocumentParams.TextDocument.Uri);
                     }
